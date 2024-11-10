@@ -6,6 +6,10 @@
 #include <QChart>
 #include <QPushButton>
 #include <QListWidget>
+#include "MonitorPlot.h"
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainWindow; }
+QT_END_NAMESPACE
 
 QT_CHARTS_USE_NAMESPACE
 class MainWindow : public QMainWindow
@@ -17,21 +21,21 @@ public:
     ~MainWindow() = default;
 
 private:
-    QChartView *chartView;
-    QChart *chart;
-    QPushButton *selectFileBtn;
-    QListWidget *variableList;
-    QString lastFilePath;
-    
+    QString monitorFilePath;
+    QVector<int> iteration;
+
+    MonitorPlot *monitorPlot;
+    Ui::MainWindow *ui;
     void setupUI();
     void loadMonitorFile(const QString &filePath);
     void plotSelectedVariables();
     QStringList parseVariables(const QString &headerLine);
-    QVector<QVector<double>> readData(const QString &filePath, const QList<int> &selectedColumns);
+    QVector<QVector<double>> readData(const QList<int> &selectedColumns);
 
 private slots:
     void onSelectFile();
     void onVariableSelectionChanged();
+    void onFontChanged();
 };
 
 #endif // MAINWINDOW_H

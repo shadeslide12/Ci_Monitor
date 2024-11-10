@@ -6,47 +6,30 @@
 #include <QFile>
 #include <QLineSeries>
 #include <QStringList>
+#include "ui_mainwindow.h"
+#include <QDebug>
+#include <QFontDialog>
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QMainWindow(parent), ui(new Ui::MainWindow), monitorPlot(new MonitorPlot(this))
 {
+    ui->setupUi(this);
     setupUI();
 }
 
 void MainWindow::setupUI()
 {
-    this->resize(1000, 800);
-    QWidget *centralWidget = new QWidget(this);
-    QHBoxLayout *mainLayout = new QHBoxLayout(centralWidget);
-    
-    // 左侧控制面板
-    QVBoxLayout *controlLayout = new QVBoxLayout();
-    selectFileBtn = new QPushButton("选择监测文件", this);
-    variableList = new QListWidget(this);
-    variableList->setSelectionMode(QAbstractItemView::MultiSelection);
-    
-    controlLayout->addWidget(selectFileBtn);
-    controlLayout->addWidget(variableList);
-    
-    // 右侧图表
-    chart = new QChart();
-    chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
-    
-    mainLayout->addLayout(controlLayout, 1);
-    mainLayout->addWidget(chartView, 4);
-    
-    setCentralWidget(centralWidget);
-    
-    connect(selectFileBtn, &QPushButton::clicked, this, &MainWindow::onSelectFile);
-    connect(variableList, &QListWidget::itemSelectionChanged, 
+    ui->Layout_Plot->addWidget(monitorPlot);
+    connect(ui->Button_Select, &QPushButton::clicked, this, &MainWindow::onSelectFile);
+    connect(ui->List_Variable, &QListWidget::itemSelectionChanged, 
             this, &MainWindow::onVariableSelectionChanged);
+    connect(ui->Button_Font, &QPushButton::clicked, this, &MainWindow::onFontChanged);
 }
 
 void MainWindow::onSelectFile()
 {
     QString filePath = QFileDialog::getOpenFileName(this,
-        "选择监测文件", "", "Monitor Files (*.mon);;All Files (*)");
-    
+        "选择监测文件", "", "Monitor Files (*.dat);;All Files (*)");
+    qDebug()<<filePath;
     if (!filePath.isEmpty()) {
         loadMonitorFile(filePath);
     }
@@ -65,20 +48,22 @@ void MainWindow::loadMonitorFile(const QString &filePath)
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
     
-    lastFilePath = filePath;
-    
+    monitorFilePath = filePath;
     QTextStream in(&file);
     QString line;
-    // 跳过第一行
     line = in.readLine();
-    // 读取变量行
     line = in.readLine();
-    
+
     QStringList variables = parseVariables(line);
-    
-    variableList->clear();
+    ui->List_Variable->clear();
+    bool isFirst = 1;
     for (const QString &var : variables) {
-        variableList->addItem(var);
+        if(isFirst)
+        {
+            isFirst = 0;
+            continue;
+        }
+        ui->List_Variable->addItem(var);
     }
 }
 
@@ -89,44 +74,31 @@ void MainWindow::onVariableSelectionChanged()
 
 void MainWindow::plotSelectedVariables()
 {
-    QList<QListWidgetItem*> selectedItems = variableList->selectedItems();
+    QList<QListWidgetItem*> selectedItems = ui->List_Variable->selectedItems();
     if (selectedItems.isEmpty())
         return;
-        
+
     QList<int> selectedColumns;
     for (QListWidgetItem* item : selectedItems) {
-        selectedColumns.append(variableList->row(item) + 2); // +2 因为第一列是Iter
+        selectedColumns.append(ui->List_Variable->row(item) + 1);
     }
-    
-    // 清除现有图表
-    chart->removeAllSeries();
-    
-    // 读取数据并绘图
-    QVector<QVector<double>> data = readData(lastFilePath, selectedColumns);
-    
-    // 为每个选中的变量创建一条线
-    for (int i = 0; i < selectedColumns.size(); ++i) {
-        QLineSeries *series = new QLineSeries();
-        series->setName(selectedItems[i]->text());
-        
-        for (int j = 0; j < data[0].size(); ++j) {
-            series->append(j, data[i][j]);
-        }
-        
-        chart->addSeries(series);
-    }
-    
-    chart->createDefaultAxes();
+
+    monitorPlot->monitorChart->removeAllSeries();
+
+    QVector<QVector<double>> data = readData(selectedColumns);
+    qDebug() << data[0];
+    monitorPlot->updateChart(selectedColumns,selectedItems,data,iteration);
 }
 
-QVector<QVector<double>> MainWindow::readData(const QString &filePath, const QList<int> &selectedColumns)
+QVector<QVector<double>> MainWindow::readData(const QList<int> &selectedColumns)
 {
+    iteration.clear();
     QVector<QVector<double>> result(selectedColumns.size());
-    
-    QFile file(filePath);
+
+    QFile file(monitorFilePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return result;
-        
+
     QTextStream in(&file);
     QString line;
     
@@ -145,7 +117,18 @@ QVector<QVector<double>> MainWindow::readData(const QString &filePath, const QLi
                 result[i].append(values[col].toDouble());
             }
         }
+
+        iteration.append(values[0].toInt());
     }
     
     return result;
+}
+
+void MainWindow::onFontChanged()
+{   
+        bool ok;
+        QFont font = QFontDialog::getFont(&ok, QFont("Arial", 12), this);
+        if (ok) {
+            monitorPlot->onFontChanged(font);
+        }
 }

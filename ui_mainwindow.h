@@ -27,6 +27,7 @@ public:
     QListWidget *List_Variable;
     QWidget *Show_Plot;
     QVBoxLayout *Layout_Plot;
+    QPushButton *Button_Font;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -47,6 +48,9 @@ public:
         Show_Plot->setGeometry(QRect(250, 30, 521, 491));
         Layout_Plot = new QVBoxLayout(Show_Plot);
         Layout_Plot->setObjectName(QString::fromUtf8("Layout_Plot"));
+        Button_Font = new QPushButton(centralwidget);
+        Button_Font->setObjectName(QString::fromUtf8("Button_Font"));
+        Button_Font->setGeometry(QRect(30, 80, 80, 25));
         MainWindow->setCentralWidget(centralwidget);
 
         retranslateUi(MainWindow);
@@ -58,6 +62,7 @@ public:
     {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
         Button_Select->setText(QCoreApplication::translate("MainWindow", "Select File", nullptr));
+        Button_Font->setText(QCoreApplication::translate("MainWindow", "font", nullptr));
     } // retranslateUi
 
 };

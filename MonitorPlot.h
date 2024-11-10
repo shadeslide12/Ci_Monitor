@@ -3,6 +3,7 @@
 #define QLIST_MONITORPLOT_H
 
 #include <QChart>
+#include <QValueAxis>
 #include <QChartView>
 #include <QListWidget>
 QT_CHARTS_USE_NAMESPACE
@@ -16,12 +17,17 @@ public:
 
     void updateChart(QList<int>& selectedColumns,
                      QList<QListWidgetItem*> selectedItems,
-                     QVector<QVector<double>>& data);
+                     QVector<QVector<double>>& data,
+                     QVector<int> &iteration);
+
+    void onFontChanged(const QFont &font);
 
     QChart* monitorChart;
 
 private:
     void setupChart();
+    QValueAxis* axisX;
+    QValueAxis* axisY;
 
 };
 

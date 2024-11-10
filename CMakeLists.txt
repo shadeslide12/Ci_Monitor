@@ -16,6 +16,8 @@ add_executable(Little_Chart
         main.cpp
         mainwindow.cpp
         mainwindow.h
+        MonitorPlot.cpp
+        MonitorPlot.h
 )
 
 target_link_libraries(Little_Chart 

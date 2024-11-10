@@ -51,6 +51,19 @@
     </property>
     <layout class="QVBoxLayout" name="Layout_Plot"/>
    </widget>
+   <widget class="QPushButton" name="Button_Font">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>80</y>
+      <width>80</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>font</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>
