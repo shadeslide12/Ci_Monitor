@@ -11,6 +11,8 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
@@ -28,6 +30,9 @@ public:
     QWidget *Show_Plot;
     QVBoxLayout *Layout_Plot;
     QPushButton *Button_Font;
+    QPushButton *Button_Start;
+    QLabel *label;
+    QComboBox *CBox_Theme;
 
     void setupUi(QMainWindow *MainWindow)
     {
@@ -41,7 +46,7 @@ public:
         Button_Select->setGeometry(QRect(30, 30, 181, 41));
         List_Variable = new QListWidget(centralwidget);
         List_Variable->setObjectName(QString::fromUtf8("List_Variable"));
-        List_Variable->setGeometry(QRect(20, 120, 201, 391));
+        List_Variable->setGeometry(QRect(20, 160, 201, 391));
         List_Variable->setSelectionMode(QAbstractItemView::MultiSelection);
         Show_Plot = new QWidget(centralwidget);
         Show_Plot->setObjectName(QString::fromUtf8("Show_Plot"));
@@ -51,6 +56,15 @@ public:
         Button_Font = new QPushButton(centralwidget);
         Button_Font->setObjectName(QString::fromUtf8("Button_Font"));
         Button_Font->setGeometry(QRect(30, 80, 80, 25));
+        Button_Start = new QPushButton(centralwidget);
+        Button_Start->setObjectName(QString::fromUtf8("Button_Start"));
+        Button_Start->setGeometry(QRect(130, 80, 80, 23));
+        label = new QLabel(centralwidget);
+        label->setObjectName(QString::fromUtf8("label"));
+        label->setGeometry(QRect(20, 130, 67, 17));
+        CBox_Theme = new QComboBox(centralwidget);
+        CBox_Theme->setObjectName(QString::fromUtf8("CBox_Theme"));
+        CBox_Theme->setGeometry(QRect(110, 130, 86, 25));
         MainWindow->setCentralWidget(centralwidget);
 
         retranslateUi(MainWindow);
@@ -63,6 +77,8 @@ public:
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
         Button_Select->setText(QCoreApplication::translate("MainWindow", "Select File", nullptr));
         Button_Font->setText(QCoreApplication::translate("MainWindow", "font", nullptr));
+        Button_Start->setText(QCoreApplication::translate("MainWindow", "Start", nullptr));
+        label->setText(QCoreApplication::translate("MainWindow", "Theme", nullptr));
     } // retranslateUi
 
 };
