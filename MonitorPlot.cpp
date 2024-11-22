@@ -22,6 +22,11 @@ MonitorPlot::MonitorPlot(QWidget *parent) :
     perf_qInlet(new QLineSeries(this)),
     perf_qOutlet(new QLineSeries(this))
 {
+    chartSeriesTable = {
+            inlet_pTotal, inlet_tTotal, inlet_vAxial, inlet_vTheta, inlet_pStatic, inlet_mDot,
+            outlet_pTotal, outlet_tTotal, outlet_vAxial, outlet_vTheta, outlet_pStatic, outlet_mDot,
+            perf_pRatio, perf_tRatio, perf_efficiency, perf_turning, perf_qInlet, perf_qOutlet
+    };
     setupChart();
 }
 
@@ -74,21 +79,15 @@ void MonitorPlot::setupChart() {
 
     monitorChart->addAxis(axisX, Qt::AlignBottom);
     monitorChart->addAxis(axisY, Qt::AlignLeft);
-
-    QList<QLineSeries*> allSeries = {
-        inlet_pTotal, inlet_tTotal, inlet_vAxial, inlet_vTheta, inlet_pStatic, inlet_mDot,
-        outlet_pTotal, outlet_tTotal, outlet_vAxial, outlet_vTheta, outlet_pStatic, outlet_mDot,
-        perf_pRatio, perf_tRatio, perf_efficiency, perf_turning, perf_qInlet, perf_qOutlet
-    };
     
-    for(auto series : allSeries) {
+    for(auto series : chartSeriesTable) {
         series->attachAxis(axisX);
         series->attachAxis(axisY);
     }
 
     axisX->setTitleText("Iteration");
     axisY->setTitleText("Value");
-    axisX->setRange(0, 100);
+    axisX->setRange(0, 20);
     axisY->setRange(-10, 10);
 
     monitorChart->legend()->setBackgroundVisible(false);
@@ -101,25 +100,23 @@ void MonitorPlot::setupChart() {
 
     initSeriesMap();
     
-    for(auto series : seriesMap.values()) {
-        series->hide();
-    }
+    hideSeries();
 }
 
 void MonitorPlot::initSeriesMap() {
     seriesMap = {
-        {"pTotal", inlet_pTotal},
-        {"tTotal", inlet_tTotal},
-        {"vAxial", inlet_vAxial},
-        {"vTheta", inlet_vTheta},
-        {"pStatic", inlet_pStatic},
-        {"mDot", inlet_mDot},
-        {"pTotal", outlet_pTotal},
-        {"tTotal", outlet_tTotal},
-        {"vAxial", outlet_vAxial},
-        {"vTheta", outlet_vTheta},
-        {"pStatic", outlet_pStatic},
-        {"mDot", outlet_mDot},
+        {"pTotal(inlet)", inlet_pTotal},
+        {"tTotal(inlet)", inlet_tTotal},
+        {"vAxial(inlet)", inlet_vAxial},
+        {"vTheta(inlet)", inlet_vTheta},
+        {"pStatic(inlet)", inlet_pStatic},
+        {"mDot(inlet)", inlet_mDot},
+        {"pTotal(outlet)", outlet_pTotal},
+        {"tTotal(outlet)", outlet_tTotal},
+        {"vAxial(outlet)", outlet_vAxial},
+        {"vTheta(outlet)", outlet_vTheta},
+        {"pStatic(outlet)", outlet_pStatic},
+        {"mDot(outlet)", outlet_mDot},
         {"pRatio", perf_pRatio},
         {"tRatio", perf_tRatio},
         {"efficiency", perf_efficiency},
@@ -171,4 +168,14 @@ void MonitorPlot::updateChart(int iteration, const MonitorVariableTable& data) {
 void MonitorPlot::onFontChanged(const QFont &font)
 {
     monitorChart->legend()->setFont(font);
+}
+
+void MonitorPlot::hideSeries() {
+    for(auto series : seriesMap.values()) {
+        series->hide();
+    }
+}
+
+void MonitorPlot::autoScale() {
+
 }

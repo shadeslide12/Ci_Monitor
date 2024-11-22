@@ -32,7 +32,7 @@ private:
     QFile outletFile;
     QFile perfFile;
     QList<QString> displayVariableList;
-    qint64 lastFilePosition;
+    QVector<qint64> filePositionTable;
     MonitorPlot *monitorPlot;
     Ui::MainWindow *ui;
 
@@ -46,7 +46,6 @@ private slots:
     void onFontChanged();
     void on_Button_Start_clicked();
     void updateUI();
-
 };
 
 #endif // MAINWINDOW_H

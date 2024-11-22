@@ -1,0 +1,8 @@
+/mnt/d/Code/Ci_Monitor - v2/build/CMakeFiles/Little_Chart.dir
+/mnt/d/Code/Ci_Monitor - v2/build/CMakeFiles/test.dir
+/mnt/d/Code/Ci_Monitor - v2/build/CMakeFiles/edit_cache.dir
+/mnt/d/Code/Ci_Monitor - v2/build/CMakeFiles/rebuild_cache.dir
+/mnt/d/Code/Ci_Monitor - v2/build/CMakeFiles/Little_Chart_autogen_timestamp_deps.dir
+/mnt/d/Code/Ci_Monitor - v2/build/CMakeFiles/Little_Chart_autogen.dir
+/mnt/d/Code/Ci_Monitor - v2/build/CMakeFiles/test_autogen_timestamp_deps.dir
+/mnt/d/Code/Ci_Monitor - v2/build/CMakeFiles/test_autogen.dir

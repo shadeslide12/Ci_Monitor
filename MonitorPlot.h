@@ -16,16 +16,15 @@ Q_OBJECT
 public:
     explicit MonitorPlot(QWidget* parent = nullptr);
     ~MonitorPlot()=default;
-
     void updateChart(int iteration, const MonitorVariableTable& data);
-
     void onFontChanged(const QFont &font);
+    void hideSeries();
+    void updateSeriesVisibility(const QStringList& selectedVariables);
 
     QChart* monitorChart;
 
-    void updateSeriesVisibility(const QStringList& selectedVariables);
-
 private:
+    QList<QLineSeries* > chartSeriesTable;
     QLineSeries* inlet_pTotal;
     QLineSeries* inlet_tTotal;
     QLineSeries* inlet_vAxial;
@@ -53,6 +52,7 @@ private:
 
     QMap<QString, QLineSeries*> seriesMap;
     void initSeriesMap();
+    void autoScale();
 
 };
 

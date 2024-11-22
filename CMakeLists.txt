@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(Little_Chart)
+project(Little_Chart_V2)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_AUTOMOC ON)
@@ -19,6 +19,14 @@ add_executable(Little_Chart
         MonitorPlot.cpp
         MonitorPlot.h
         DataStructure.h
+)
+
+add_executable(test test.cpp)
+
+target_link_libraries(test 
+        Qt5::Core
+        Qt5::Gui
+        Qt5::Widgets
 )
 
 target_link_libraries(Little_Chart 

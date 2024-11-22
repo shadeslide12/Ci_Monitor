@@ -11,17 +11,16 @@
 #include <QFontDialog>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), monitorPlot(new MonitorPlot(this)),
-    timer(new QTimer(this)), lastFilePosition(0)
+    timer(new QTimer(this)), filePositionTable({0,0,0})
 {
     inletFile.setFileName("./mon_inlet.dat");
     outletFile.setFileName("./mon_outlet.dat");
     perfFile.setFileName("./mon_perf.dat");
 
-
-
     ui->setupUi(this);
     setupUI();
     timer->setInterval(1000);
+    connect(timer,&QTimer::timeout,this,&MainWindow::updateMonitorData);
 }
 
 void MainWindow::setupUI()
@@ -58,20 +57,20 @@ void MainWindow::onSelectFile()
     qDebug()<< filePath;
 
     if(filePath.contains("inlet")){
-        ui->List_Variable->addItem("pTotal");
-        ui->List_Variable->addItem("tTotal");
-        ui->List_Variable->addItem("vAxial");
-        ui->List_Variable->addItem("vTheta");
-        ui->List_Variable->addItem("pStatic");
-        ui->List_Variable->addItem("mDot");
+        ui->List_Variable->addItem("pTotal(inlet)");
+        ui->List_Variable->addItem("tTotal(inlet)");
+        ui->List_Variable->addItem("vAxial(inlet)");
+        ui->List_Variable->addItem("vTheta(inlet)");
+        ui->List_Variable->addItem("pStatic(inlet)");
+        ui->List_Variable->addItem("mDot(inlet)");
     }
     if(filePath.contains("outlet")){
-        ui->List_Variable->addItem("pTotal");
-        ui->List_Variable->addItem("tTotal");
-        ui->List_Variable->addItem("vAxial");
-        ui->List_Variable->addItem("vTheta");
-        ui->List_Variable->addItem("pStatic");
-        ui->List_Variable->addItem("mDot");
+        ui->List_Variable->addItem("pTotal(outlet)");
+        ui->List_Variable->addItem("tTotal(outlet)");
+        ui->List_Variable->addItem("vAxial(outlet)");
+        ui->List_Variable->addItem("vTheta(outlet)");
+        ui->List_Variable->addItem("pStatic(outlet)");
+        ui->List_Variable->addItem("mDot(outlet)");
     }
     if(filePath.contains("perf")){
         ui->List_Variable->addItem("pRatio");
@@ -81,14 +80,13 @@ void MainWindow::onSelectFile()
         ui->List_Variable->addItem("qInlet");
         ui->List_Variable->addItem("qOutlet");
     }
-
-
 }
 
 
 void MainWindow::onVariableSelectionChanged()
 {
     if(ui->List_Variable->selectedItems().isEmpty()){
+        monitorPlot->hideSeries();
         qDebug() << "List is empty ";
         return;
     }
@@ -106,35 +104,34 @@ void MainWindow::onVariableSelectionChanged()
 
 
 void MainWindow::updateMonitorData() {
-
-    if (!inletFile.isOpen()) {
-        if (!inletFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            qDebug() << "Failed to open inletfile";
+    qDebug()<<"lastFilePosition"<<filePositionTable[0];
+    if(!inletFile.isOpen()) {
+        if (!(inletFile.open(QIODevice::ReadOnly | QIODevice::Text))) {
+            qDebug() << "faile to read Files";
             return;
         }
     }
-    if(!outletFile.isOpen()){
-        if(!outletFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-            qDebug() << "Failed to open outletfile";
+    if(!outletFile.isOpen()) {
+        if (!(outletFile.open(QIODevice::ReadOnly | QIODevice::Text))) {
+            qDebug() << "faile to read Files";
             return;
         }
     }
-    if(!perfFile.isOpen()){
-        if(!perfFile.open(QIODevice::ReadOnly | QIODevice::Text)){
-            qDebug() << "Failed to open perfFile";
+    if(!perfFile.isOpen()) {
+        if (!(perfFile.open(QIODevice::ReadOnly | QIODevice::Text))) {
+            qDebug() << "faile to read Files";
             return;
         }
     }
-
     QTextStream inInlet(&inletFile);
-    QTextStream inOutlet(&outletFile);   
+    QTextStream inOutlet(&outletFile);
     QTextStream inPerf(&perfFile);
-    inInlet.seek(lastFilePosition);
-    inOutlet.seek(lastFilePosition);
-    inPerf.seek(lastFilePosition);
 
+    inInlet.seek(filePositionTable[0]);
+    inOutlet.seek(filePositionTable[1]);
+    inPerf.seek(filePositionTable[2]);
 
-    if(lastFilePosition == 0){
+    if(filePositionTable[0] == 0){
         inInlet.readLine();
         inInlet.readLine();
         inOutlet.readLine();
@@ -142,16 +139,20 @@ void MainWindow::updateMonitorData() {
         inPerf.readLine();
         inPerf.readLine();
     }
-
     QString lineInlet = inInlet.readLine();
     QString lineOutlet = inOutlet.readLine();
     QString linePerf = inPerf.readLine();
-
-    if(lineInlet.isEmpty() || lineOutlet.isEmpty() || linePerf.isEmpty())
+    if(lineInlet.isEmpty() || lineOutlet.isEmpty() || linePerf.isEmpty()) {
+        qDebug() << lineInlet.isEmpty();
+        qDebug() << lineOutlet.isEmpty();
+        qDebug() << linePerf.isEmpty();
         return;
+    }
 
-    QStringList valuesInlet = lineInlet.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
-    qDebug()<< valuesInlet;
+    QStringList valuesInlet = lineInlet.split(" ",Qt::SkipEmptyParts);
+    qDebug() << "inletFile value is " <<valuesInlet;
+    iteration.append(valuesInlet[0].toInt());
+
     monitorVariableTable.inlet.pTotal.append(valuesInlet[1].toDouble());
     monitorVariableTable.inlet.tTotal.append(valuesInlet[2].toDouble());
     monitorVariableTable.inlet.vAxial.append(valuesInlet[3].toDouble());
@@ -159,7 +160,8 @@ void MainWindow::updateMonitorData() {
     monitorVariableTable.inlet.pStatic.append(valuesInlet[5].toDouble());
     monitorVariableTable.inlet.mDot.append(valuesInlet[6].toDouble());
 
-    QStringList valuesOutlet = lineOutlet.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    QStringList valuesOutlet = lineOutlet.split(" ",Qt::SkipEmptyParts) ;
+    qDebug() << "outletFile value is " << valuesOutlet;
     monitorVariableTable.outlet.pTotal.append(valuesOutlet[1].toDouble());
     monitorVariableTable.outlet.tTotal.append(valuesOutlet[2].toDouble());
     monitorVariableTable.outlet.vAxial.append(valuesOutlet[3].toDouble());
@@ -167,22 +169,18 @@ void MainWindow::updateMonitorData() {
     monitorVariableTable.outlet.pStatic.append(valuesOutlet[5].toDouble());
     monitorVariableTable.outlet.mDot.append(valuesOutlet[6].toDouble());
 
-    QStringList valuesPerf = linePerf.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    QStringList valuesPerf = linePerf.split(" ", Qt::SkipEmptyParts);
+    qDebug() << "PerfFile value is " << valuesPerf;
     monitorVariableTable.perform.pRatio.append(valuesPerf[1].toDouble());
     monitorVariableTable.perform.tRatio.append(valuesPerf[2].toDouble());
     monitorVariableTable.perform.efficiency.append(valuesPerf[3].toDouble());
     monitorVariableTable.perform.turning.append(valuesPerf[4].toDouble());
     monitorVariableTable.perform.qInlet.append(valuesPerf[5].toDouble());
     monitorVariableTable.perform.qOutlet.append(valuesPerf[6].toDouble());
-    
 
-    iteration.append(valuesInlet[0].toInt());
-    lastFilePosition = inInlet.pos();
-
-    qDebug()<< "inlet.pStatic "<< monitorVariableTable.inlet.pStatic<<" ";
-    qDebug()<<"outlet.pStatic" << monitorVariableTable.outlet.pStatic<<" ";
-    qDebug()<< "perform.pRatio"<<monitorVariableTable.perform.pRatio<<" ";
-
+    filePositionTable[0] = inInlet.pos();
+    filePositionTable[1] = inOutlet.pos();
+    filePositionTable[2] = inPerf.pos();
     if(ui->List_Variable->selectedItems().isEmpty())
         return;
     monitorPlot->updateChart(iteration.last(),monitorVariableTable);

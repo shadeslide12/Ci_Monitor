@@ -1,0 +1,48 @@
+void MainWindow::updateMonitorData() {
+
+    if (!dataFile.isOpen()) {
+        if (!dataFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            qDebug() << "Failed to open file";
+            return;
+        }
+    }
+
+    QTextStream in(&dataFile);
+    QString line;
+
+    if (lastFilePosition == 0) {
+        in.readLine();  // 跳过标题行
+        in.readLine();  // 跳过说明行
+    }
+
+    iteration.clear();
+    qDebug() << "ok";
+
+    while (!in.atEnd()) {
+        line = in.readLine().trimmed();  // 去除行尾的换行符和空格
+        qDebug() << "Line content:" << line;
+
+        QStringList values = line.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+        qDebug() << "Parsed values:" << values;
+
+        // 确保至少有7列数据
+        if (values.size() < 7) {
+            qDebug() << "Insufficient columns in line, skipping this line.";
+            continue;
+        }
+
+        if (monitorFilePath.contains("inlet")) {
+            qDebug() << "Processing inlet data";
+            monitorVariableTable.inlet.pTotal.append(values[1].toDouble());
+            monitorVariableTable.inlet.tTotal.append(values[2].toDouble());
+            monitorVariableTable.inlet.vAxial.append(values[3].toDouble());
+            monitorVariableTable.inlet.vTheta.append(values[4].toDouble());
+            monitorVariableTable.inlet.pStatic.append(values[5].toDouble());
+            monitorVariableTable.inlet.mDot.append(values[6].toDouble());
+        }
+
+        iteration.append(values[0].toInt());
+    }
+
+    dataFile.close();
+}
