@@ -10,7 +10,8 @@
 #include <QDebug>
 #include <QFontDialog>
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), monitorPlot(new MonitorPlot(this)),
+    : QMainWindow(parent), ui(new Ui::MainWindow),
+    monitorPlot(new MonitorPlot(this)),
     timer(new QTimer(this)), filePositionTable({0,0,0})
 {
     inletFile.setFileName("./mon_inlet.dat");
@@ -98,6 +99,7 @@ void MainWindow::onVariableSelectionChanged()
     }
 
     monitorPlot->updateSeriesVisibility(displayVariableList);
+    monitorPlot->updateRangeOnVariableChange();
     updateMonitorData();
 }
 
@@ -183,7 +185,7 @@ void MainWindow::updateMonitorData() {
     filePositionTable[2] = inPerf.pos();
     if(ui->List_Variable->selectedItems().isEmpty())
         return;
-    monitorPlot->updateChart(iteration.last(),monitorVariableTable);
+    monitorPlot->updateChart(iteration.last(), monitorVariableTable);
 }
 
 

@@ -7,8 +7,10 @@
 #include <QListWidget>
 #include <QLineSeries>
 #include "DataStructure.h"
-
+#include <functional>
 QT_CHARTS_USE_NAMESPACE
+
+using ValueGetter = std::function<double(const MonitorVariableTable&)>;
 
 class MonitorPlot : public QChartView{
 Q_OBJECT
@@ -20,6 +22,8 @@ public:
     void onFontChanged(const QFont &font);
     void hideSeries();
     void updateSeriesVisibility(const QStringList& selectedVariables);
+    void updateRangeWithTimer(const MonitorVariableTable& data);
+    void updateRangeOnVariableChange();
 
     QChart* monitorChart;
 
@@ -46,12 +50,16 @@ private:
     QLineSeries* perf_qInlet;
     QLineSeries* perf_qOutlet;
 
-    void setupChart();
     QValueAxis* axisX;
     QValueAxis* axisY;
-
     QMap<QString, QLineSeries*> seriesMap;
+    QMap<QString, ValueGetter> valueGetMap;
+    double maxRangeY;
+    double minRangeY;
+
+    void setupChart();
     void initSeriesMap();
+    void initValueGetMap();
     void autoScale();
 
 };

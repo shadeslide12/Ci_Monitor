@@ -1,7 +1,7 @@
 #include "MonitorPlot.h"
 #include <QDebug>
 
-MonitorPlot::MonitorPlot(QWidget *parent) : 
+MonitorPlot::MonitorPlot(QWidget *parent) :
     monitorChart(new QChart),
     inlet_pTotal(new QLineSeries(this)),
     inlet_tTotal(new QLineSeries(this)),
@@ -28,6 +28,8 @@ MonitorPlot::MonitorPlot(QWidget *parent) :
             perf_pRatio, perf_tRatio, perf_efficiency, perf_turning, perf_qInlet, perf_qOutlet
     };
     setupChart();
+    maxRangeY = std::numeric_limits<double>::lowest();
+    minRangeY = std::numeric_limits<double>::max();
 }
 
 void MonitorPlot::setupChart() {
@@ -87,7 +89,7 @@ void MonitorPlot::setupChart() {
 
     axisX->setTitleText("Iteration");
     axisY->setTitleText("Value");
-    axisX->setRange(0, 20);
+    axisX->setRange(0, 5);
     axisY->setRange(-10, 10);
 
     monitorChart->legend()->setBackgroundVisible(false);
@@ -99,6 +101,7 @@ void MonitorPlot::setupChart() {
     monitorChart->setDropShadowEnabled(true);
 
     initSeriesMap();
+    initValueGetMap();
     
     hideSeries();
 }
@@ -138,7 +141,7 @@ void MonitorPlot::updateSeriesVisibility(const QStringList& selectedVariables) {
     }
 }
 
-void MonitorPlot::updateChart(int iteration, const MonitorVariableTable& data) {
+void MonitorPlot::updateChart(int iteration, const MonitorVariableTable &data) {
     inlet_pTotal->append(iteration, data.inlet.pTotal.last());
     inlet_tTotal->append(iteration, data.inlet.tTotal.last());
     inlet_vAxial->append(iteration, data.inlet.vAxial.last());
@@ -161,8 +164,9 @@ void MonitorPlot::updateChart(int iteration, const MonitorVariableTable& data) {
     perf_qOutlet->append(iteration, data.perform.qOutlet.last());
 
     if (iteration > axisX->max()) {
-        axisX->setRange(0, iteration + 10);
+        axisX->setRange(0, iteration + 1);
     }
+    updateRangeWithTimer(data);
 }
 
 void MonitorPlot::onFontChanged(const QFont &font)
@@ -174,8 +178,58 @@ void MonitorPlot::hideSeries() {
     for(auto series : seriesMap.values()) {
         series->hide();
     }
+
 }
 
 void MonitorPlot::autoScale() {
 
+}
+
+void MonitorPlot::updateRangeWithTimer(const MonitorVariableTable& data) {
+   for(const auto& var : seriesMap.keys()){
+       if(seriesMap[var]-> isVisible()){
+           double value = valueGetMap[var](data);
+           minRangeY = std::min(minRangeY,value);
+           maxRangeY = std::max(maxRangeY,value);
+       }
+   }
+   axisY->setRange(minRangeY,maxRangeY);
+}
+
+void MonitorPlot::updateRangeOnVariableChange(){
+    maxRangeY = std::numeric_limits<double>::lowest();
+    minRangeY = std::numeric_limits<double>::max();
+    for(const auto& series : seriesMap.values()) {
+        if(series->isVisible() && (!series->points().isEmpty()) ) {
+            const auto& points =series->points();
+            for(const auto& point : points) {
+                maxRangeY = std::max(maxRangeY, point.y());
+                minRangeY = std::min(minRangeY, point.y());
+            }
+        }
+    }
+    axisY->setRange(minRangeY, maxRangeY);
+}
+
+void MonitorPlot::initValueGetMap() {
+    valueGetMap["pTotal(inlet)"] = [](const MonitorVariableTable& data) { return data.inlet.pTotal.last(); };
+    valueGetMap["tTotal(inlet)"] = [](const MonitorVariableTable& data) { return data.inlet.tTotal.last(); };
+    valueGetMap["vAxial(inlet)"] = [](const MonitorVariableTable& data) { return data.inlet.vAxial.last(); };
+    valueGetMap["vTheta(inlet)"] = [](const MonitorVariableTable& data) { return data.inlet.vTheta.last(); };
+    valueGetMap["pStatic(inlet)"] = [](const MonitorVariableTable& data) { return data.inlet.pStatic.last(); };
+    valueGetMap["mDot(inlet)"] = [](const MonitorVariableTable& data) { return data.inlet.mDot.last(); };
+
+    valueGetMap["pTotal(outlet)"] = [](const MonitorVariableTable& data) { return data.outlet.pTotal.last(); };
+    valueGetMap["tTotal(outlet)"] = [](const MonitorVariableTable& data) { return data.outlet.tTotal.last(); };
+    valueGetMap["vAxial(outlet)"] = [](const MonitorVariableTable& data) { return data.outlet.vAxial.last(); };
+    valueGetMap["vTheta(outlet)"] = [](const MonitorVariableTable& data) { return data.outlet.vTheta.last(); };
+    valueGetMap["pStatic(outlet)"] = [](const MonitorVariableTable& data) { return data.outlet.pStatic.last(); };
+    valueGetMap["mDot(outlet)"] = [](const MonitorVariableTable& data) { return data.outlet.mDot.last(); };
+
+    valueGetMap["pRatio"] = [](const MonitorVariableTable& data) { return data.perform.pRatio.last(); };
+    valueGetMap["tRatio"] = [](const MonitorVariableTable& data) { return data.perform.tRatio.last(); };
+    valueGetMap["efficiency"] = [](const MonitorVariableTable& data) { return data.perform.efficiency.last(); };
+    valueGetMap["turning"] = [](const MonitorVariableTable& data) { return data.perform.turning.last(); };
+    valueGetMap["qInlet"] = [](const MonitorVariableTable& data) { return data.perform.qInlet.last(); };
+    valueGetMap["qOutlet"] = [](const MonitorVariableTable& data) { return data.perform.qOutlet.last(); };
 }

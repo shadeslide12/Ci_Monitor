@@ -1,8 +1,0 @@
-/mnt/d/Code/Ci_Monitor - shadowv2/cmake-build-debug-wsl-gcc-11/CMakeFiles/Little_Chart.dir
-/mnt/d/Code/Ci_Monitor - shadowv2/cmake-build-debug-wsl-gcc-11/CMakeFiles/test.dir
-/mnt/d/Code/Ci_Monitor - shadowv2/cmake-build-debug-wsl-gcc-11/CMakeFiles/edit_cache.dir
-/mnt/d/Code/Ci_Monitor - shadowv2/cmake-build-debug-wsl-gcc-11/CMakeFiles/rebuild_cache.dir
-/mnt/d/Code/Ci_Monitor - shadowv2/cmake-build-debug-wsl-gcc-11/CMakeFiles/Little_Chart_autogen_timestamp_deps.dir
-/mnt/d/Code/Ci_Monitor - shadowv2/cmake-build-debug-wsl-gcc-11/CMakeFiles/Little_Chart_autogen.dir
-/mnt/d/Code/Ci_Monitor - shadowv2/cmake-build-debug-wsl-gcc-11/CMakeFiles/test_autogen_timestamp_deps.dir
-/mnt/d/Code/Ci_Monitor - shadowv2/cmake-build-debug-wsl-gcc-11/CMakeFiles/test_autogen.dir
